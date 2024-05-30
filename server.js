@@ -1,11 +1,5 @@
 import { serveDir } from "https://deno.land/std@0.223.0/http/file_server.ts";
 
-// 禁止される動詞および形容詞のリスト
-const forbiddenWords = [
-  "たべる", "はしる", "みる", "きく", "よむ", "かく", "いう", // 動詞の例
-  "たかい", "ひくい", "うつくしい", "きたない", "つよい", "よわい" // 形容詞の例
-];
-
 // 単語リスト
 const words = ["しりとり", "りんご", "ごま", "まりも", "もも", "もうし", "しんじ", "じんじ",
                "じゃがいも", "もうふ", "いす", "すいか", "あめ", "あさり", "いわ", "おみやげ",
@@ -33,11 +27,6 @@ function getRandomWord() {
 
 // 直前の単語を保持しておく
 let wordHistories = [getRandomWord()];
-
-// 動詞および形容詞かどうかを判定する関数
-function isVerbOrAdjective(word) {
-  return forbiddenWords.includes(word);
-}
 
 // 特殊ケースを処理する関数
 function handleSpecialCases(word) {
@@ -105,19 +94,6 @@ Deno.serve(async (request) => {
       );
     }
 
-    if (isVerbOrAdjective(nextWord)) {
-      return new Response(
-        JSON.stringify({
-          "errorMessage": "動詞または形容詞が入力されました。使用できません。",
-          "errorCode": "10006"
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        }
-      );
-    }
-
     const previousWordHiragana = toHiragana(previousWord);
     const adjustedPreviousWord = handleSpecialCases(previousWordHiragana);
 
@@ -137,7 +113,7 @@ Deno.serve(async (request) => {
     if (wordHistories.some(word => toHiragana(word) === nextWordHiragana)) {
       return new Response(
         JSON.stringify({
-          "errorMessage": "同じ単語が既に使用されています",
+          "errorMessage": "同じ単語が既に使用されています。ゲーム終了です。",
           "errorCode": "10003"
         }),
         {
